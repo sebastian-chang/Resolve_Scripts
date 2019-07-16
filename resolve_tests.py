@@ -26,14 +26,14 @@ track_num = 1
 while track_num <= active_timeline.GetTrackCount('video'):
     video_track_items = active_timeline.GetItemsInTrack('video', track_num)
 
-    for item in video_track_items:
-        video_clip = video_track_items[item]
+    for video_item in video_track_items.values():
+        video_clip = video_item
         if video_clip.GetClipColor() != 'Default':
             for clip_color in clip_colors:
                 if clip_color == video_clip.GetClipColor():
-                    for preset in presets:
-                        if clip_color in presets[preset]:
-                            project.LoadRenderPreset(presets[preset])
+                    for preset in presets.values():
+                        if clip_color in preset:
+                            project.LoadRenderPreset(preset)
                             file_name = video_clip.GetName().split(sep, 1)[0] + '-' \
                             + str(tc.remove_tc_format(tc.frame_to_tc(video_clip.GetStart(), fps)))
                             check = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), \
@@ -54,5 +54,6 @@ render_num = 1
 while render_num <= len(project.GetRenderJobs()):
     if project.GetRenderJobStatus(render_num)['JobStatus'] == 'Complete':
         project.DeleteRenderJobByIndex(render_num)
+        print(render_num)
 
 print('End')

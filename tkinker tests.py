@@ -163,3 +163,33 @@ tk.Button(text='Quit',
        command=root.destroy,
        fg="red").pack(side=tk.LEFT, padx=10)
 tk.mainloop()
+
+
+
+def ShowChoice():
+    print(clip_colors[c.get()])
+    user_input.destroy()
+
+def pick_clip_color():
+    tk.ttk.Label(user_input, text='What clip color would you like to render?', justify = 'center', \
+                 font = 'Verdana 12 bold').grid(row = 0, sticky = tk.N)
+
+    row_num = 1
+    for position, clip_color in enumerate(clip_colors):
+        try:
+            tk.Radiobutton(user_input, text=clip_color, indicatoron = 0, width = 10, \
+                            variable = c, value = position, bg = clip_color, relief = tk.RAISED).grid(row = row_num, sticky = tk.W)
+        #    tk.Label(user_input, bg = clip_color, width = 10, relief = tk.FLAT).grid(row = row_num)
+        except tk.TclError:
+            tk.Radiobutton(user_input, text=clip_color, indicatoron = 0, width = 10, \
+                            variable = c, value = position, bg = '#ff8000', relief = tk.RAISED).grid(row = row_num, sticky = tk.W)
+        # tk.Label(user_input, bg = '#ff8000', width = 10, relief = tk.FLAT).grid(row = row_num)
+        row_num += 1
+
+    tk.ttk.Button(user_input, text = 'Okay', command = ShowChoice).grid(row = row_num, sticky = tk.SE)
+
+def pick_render_directory():
+    tk.Label(user_input, text="Select Render Destination:")
+    dirname = tk.filedialog.askdirectory()
+    if dirname:
+        save_directory.set(dirname)

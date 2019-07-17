@@ -2,8 +2,6 @@ import tkinter as tk
 import tkinter.filedialog
 
 user_input = tk.Tk()
-user_input.geometry('300x50')
-user_input.resizable(False, True)
 clip_colors = ['Orange', 'Apricot', 'Yellow', 'Lime', 'Olive', 'Green', 'Teal', 'Navy', 'Blue', 'Purple', 'Violet', 'Pink', 'Tan', 'Beige', 'Brown', 'Chocolate']
 
 c = tk.IntVar()
@@ -19,16 +17,16 @@ row_num = 1
 for position, clip_color in enumerate(clip_colors):
     try:
         tk.Radiobutton(user_input, text=clip_color, indicatoron = 0, width = 10, \
-                        variable = c, value = position, relief = tk.RAISED).grid(row = row_num, sticky = tk.W)
-        tk.Label(user_input, bg = clip_color, width = 10, relief = tk.FLAT).grid(row = row_num)
+                        variable = c, value = position, bg = clip_color, relief = tk.RAISED).grid(row = row_num, sticky = tk.W)
+    #    tk.Label(user_input, bg = clip_color, width = 10, relief = tk.FLAT).grid(row = row_num)
     except tk.TclError:
         tk.Radiobutton(user_input, text=clip_color, indicatoron = 0, width = 10, \
-                        variable = c, value = position, relief = tk.RAISED).grid(row = row_num, sticky = tk.W)
-        tk.Label(user_input, bg = '#ff8000', width = 10, relief = tk.FLAT).grid(row = row_num)
+                        variable = c, value = position, bg = '#ff8000', relief = tk.RAISED).grid(row = row_num, sticky = tk.W)
+       # tk.Label(user_input, bg = '#ff8000', width = 10, relief = tk.FLAT).grid(row = row_num)
     row_num += 1
 
-tk.Button(user_input, text = 'Select', command = ShowChoice, width = 10, fg = 'teal', relief = tk.RAISED, \
-            bg = 'red').grid(row = row_num, sticky = tk.SE)
+tk.Button(user_input, text = 'Okay', command = ShowChoice, width = 10, relief = tk.GROOVE, bd = 5, \
+            state = tk.ACTIVE).grid(row = row_num, sticky = tk.SE)
 
 user_input.mainloop()
 
@@ -47,6 +45,9 @@ Radiobutton(master, text = "user-defined", variable=var, value = 2).grid(row=2, 
 Button(master, text = "OK", command=quit_loop).grid(row=3, sticky=W)
 
 
+tk.Label(user_input, text="Select Render Destination:")
+save_directory = tk.filedialog.askdirectory()
+print(save_directory)
 
 
 import tkinter.filedialog

@@ -1,5 +1,4 @@
 import importlib.util
-import tkinter as tk
 
 timecode_path = '/Users/schang/Google Drive/Editables/Python/Timecode/timecode.py'
 resolve_path = '/Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Scripting/Examples/python_get_resolve.py'

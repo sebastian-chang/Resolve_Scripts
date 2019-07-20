@@ -15,9 +15,11 @@ p = tk.IntVar()
 def show_choices():
     preset_input.destroy()
     file_directory = get_directory()
+    folder_name = os.path.basename(file_directory)
     print(clip_colors[c.get()])
     print(preset_list[p.get()])
     print(file_directory)
+    print(folder_name)
     user_input_window.destroy()
 
 def get_directory():

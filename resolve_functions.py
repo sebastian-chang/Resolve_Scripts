@@ -43,19 +43,25 @@ def get_clip_colors():
         track_num += 1
     return active_clip_colors
 
+# Function to return a list of render presets.
 def get_render_presets():
     dict_presets = project.GetRenderPresets()
     return(list(dict_presets.values()))
 
-def add_job_to_render_queue(clip_color, user_preset, render_location):
+# Adds clips to render queue based on clip color with given render location.
+def add_clip_color_to_render_queue(clip_color, user_preset, render_location):
     # Gets active timeline from current project
     active_timeline = project.GetCurrentTimeline() 
     track_num = 1
     project.LoadRenderPreset(user_preset)
 
+    # Gets every item from every video track from the active timeline.
     while track_num <= active_timeline.GetTrackCount('video'):
         video_track_items = active_timeline.GetItemsInTrack('video', track_num)
 
+        # Checks each video clip color to see if it matches given clip color and adds to Render queue.
+        # Adds suffix to file name of timecode of start point of  clip in active timeline.
+        # This will only be added if render preset allows unique filenames.
         for video_item in video_track_items.values():
             video_clip = video_item
             if video_clip.GetClipColor() != 'Default':
@@ -70,9 +76,11 @@ def add_job_to_render_queue(clip_color, user_preset, render_location):
         
         track_num += 1
 
+# Returns the number of jobs in render queue.
 def get_number_of_render_jobs():
     return(len(project.GetRenderJobs()))
 
+# Deletes all completed jobs in render queue.
 def delete_completed_jobs():
     render_num = 1
     while render_num <= len(project.GetRenderJobs()):
@@ -82,12 +90,16 @@ def delete_completed_jobs():
             render_num += 1
     return('Completed jobs have been removed.')
 
+# Tells Resolve to start rendering all jobs in render queue.
 def start_render_jobs():
     project.StartRendering()
     while project.IsRenderingInProgress():
         continue
     return('Rendering is done.')
 
+# Creates a new bin under the Master bin with the name of the folder name in 'folder_location'.
+# Appends the time to the end of the bin name.
+# Add media from 'folder_location' to the media pool in newly created bin.
 def add_to_media_pool(folder_location):
     if os.path.exists(folder_location):
         t = time.localtime()
@@ -102,7 +114,7 @@ def add_to_media_pool(folder_location):
 
 
 get_render_presets()
-add_job_to_render_queue('Green','Pink - ProResProxy HD 2398', '/Users/schang/Desktop/Render Tests')
+add_clip_color_to_render_queue('Green','Pink - ProResProxy HD 2398', '/Users/schang/Desktop/Render Tests')
 get_clip_colors()
 get_number_of_render_jobs()
 start_render_jobs()

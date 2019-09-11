@@ -48,6 +48,17 @@ def get_render_presets():
     dict_presets = project.GetRenderPresets()
     return(list(dict_presets.values()))
 
+# Function to return all timeline names from current project.
+def get_timelines():
+    dict_timelines = {}
+    index = 1
+    
+    while index <= project.GetTimelineCount():
+        dict_timelines[index] = project.GetTimelineByIndex(index).GetName()
+        index += 1
+    
+    return dict_timelines
+
 # Adds clips to render queue based on clip color with given render location.
 def add_clip_color_to_render_queue(clip_color, user_preset, render_location):
     # Gets active timeline from current project
@@ -68,13 +79,38 @@ def add_clip_color_to_render_queue(clip_color, user_preset, render_location):
                 if clip_color == video_clip.GetClipColor():
                     file_name = video_clip.GetName().split(sep, 1)[0] + '-' \
                     + str(tc.remove_tc_format(tc.frame_to_tc(video_clip.GetStart(), fps)))
-                    check = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), \
-                    'MarkOut': video_clip.GetEnd() -1, 'CustomName': file_name})
-                    if check == False:
+                    check_render = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), \
+                    'MarkOut': video_clip.GetEnd() -1, 'TargetDir': render_location, 'CustomName': file_name})
+                    if(not check_render):
                         return 'An error has occured.'
                     project.AddRenderJob()
         
         track_num += 1
+
+def add_stringout_batch_render_queue(user_timeline, user_preset, render_location):
+    timeline = project.GetTimelineByIndex(user_timeline)
+    check_preset = project.LoadRenderPreset(user_preset)
+    check_timeline = project.SetCurrentTimeline(timeline)
+
+    if(not check_preset):
+        return 'Invalid preset'
+    if(not check_timeline):
+        return 'Invalid timeline'
+    
+    timeline_markers = timeline.GetMarkers()
+
+    for marker in timeline_markers:
+        if(timeline_markers[marker]['note']):
+            file_name = timeline_markers[marker]['note']
+        else:
+            file_name = timeline.GetName() + '-' + str(tc.remove_tc_format(tc.frame_to_tc(timeline.GetStartFrame() + marker, fps)))
+
+        start_time = timeline.GetStartFrame() + marker
+        end_time = start_time + timeline_markers[marker]['duration'] - 1
+        check_render = project.SetRenderSettings({'MarkIn': start_time, 'MarkOut': end_time, 'TargetDir': render_location, 'CustomName': file_name})
+        if(not check_render):
+            return 'An error has occured.'
+        project.AddRenderJob()
 
 # Returns the number of jobs in render queue.
 def get_number_of_render_jobs():
@@ -111,12 +147,3 @@ def add_to_media_pool(folder_location):
         return(f'Media in {folder_location} has been added to the media pool.')
     else:
         return("Folder location doesn't exist.")
-
-
-get_render_presets()
-add_clip_color_to_render_queue('Green','Pink - ProResProxy HD 2398', '/Users/schang/Desktop/Render Tests')
-get_clip_colors()
-get_number_of_render_jobs()
-start_render_jobs()
-delete_completed_jobs()
-add_to_media_pool('/Users/schang/Desktop/Resolve Tests')

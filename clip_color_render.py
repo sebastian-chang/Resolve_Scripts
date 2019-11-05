@@ -1,8 +1,12 @@
 import importlib.util
-import tkinter as tk
-import tkinter.filedialog
-import tkinter.ttk
+from PyQt5.QtWidgets import (QApplication, QWidget, QComboBox, QGroupBox, QFormLayout,
+                             QLabel, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QDialog, QSpinBox, 
+                             QFileDialog, QLineEdit, QCheckBox, QRadioButton)
+from fbs_runtime.application_context.PyQt5 import ApplicationContext                             
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QTimer
 import os
+import sys
 
 # Initialize  additional Python scripts needed to run code.
 # timecode.py is used to do any timecode conversions.
@@ -10,8 +14,143 @@ import os
 resolve_func_path = '/Users/schang/Google Drive/Editables/Python/Resolve/resolve_functions.py'
 spec1 = importlib.util.spec_from_file_location('resolve', resolve_func_path)
 
-resolve = importlib.util.module_from_spec(spec1)
-spec1.loader.exec_module(resolve)
+my_resolve = importlib.util.module_from_spec(spec1)
+spec1.loader.exec_module(my_resolve)
+
+class User_Input(QDialog):
+    def __init__(self):
+        super(User_Input, self).__init__()
+        self.createFormGroupBox()
+
+        # Create our buttons
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(self.show_dialog)
+        buttonBox.rejected.connect(self.reject)
+
+        # Set our widget layout
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(self.formGroupBox)
+        mainLayout.addWidget(buttonBox)
+        self.setGeometry(50, 50, 0, 0)
+        self.setLayout(mainLayout)
+
+        self.setWindowTitle('Sequence Batch Render')
+    
+    # Main user input form
+    def createFormGroupBox(self):
+        self.presets = QComboBox(self)
+        self.clip_colors = QComboBox(self)
+        self.suffix_widget = QWidget()
+        self.suffix_filename_widget = QWidget()
+        
+        self.formGroupBox = QGroupBox('Batch Renderer')
+        # Create layout boxes for user inputs
+        self.layout = QFormLayout()
+        suffix_hbox = QHBoxLayout(self.suffix_widget)
+        suffix_filename_hbox = QHBoxLayout(self.suffix_filename_widget)
+        
+        # Add our presets to drop down menu
+        for preset in my_resolve.get_render_presets():
+            self.presets.addItem(preset) # Add preset to our drop down menu
+        self.layout.addRow(QLabel('Select a render preset:'), self.presets)
+
+        # Add our presets to drop down menu
+        for clip_color in my_resolve.get_clip_colors():
+            self.clip_colors.addItem(clip_color) # Add clip color to our drop down menu
+        self.layout.addRow(QLabel('Select a clip color to render:'), self.clip_colors)
+
+        self.timeline_list = []
+        for x in range(1, int(my_resolve.project.GetTimelineCount()) + 1):
+            self.timeline_list.append(my_resolve.project.GetTimelineByIndex(x).GetName())
+        
+        # Add our timelines to possible render list
+        for num, timeline in enumerate(self.timeline_list):
+            self.timeline_list[num] = QCheckBox(timeline)
+            self.timeline_list[num].stateChanged.connect(self.show_exclude_header)
+            self.layout.addRow(self.timeline_list[num])
+            
+        suffix_label = QLabel('Add a suffix to file name?')
+        self.suffix_yes = QRadioButton('Yes')
+        self.suffix_no = QRadioButton('No')
+        self.suffix_yes.toggled.connect(self.show_suffix_filename)
+        self.suffix_no.toggled.connect(self.hide_suffix_filename)
+        self.suffix_no.setChecked(True)
+
+        suffix_hbox.addWidget(suffix_label)
+        suffix_hbox.addWidget(self.suffix_yes)
+        suffix_hbox.addWidget(self.suffix_no)
+
+        suffix_filename_label = QLabel('Suffix:')
+
+        suffix_filename_hbox.addWidget(suffix_filename_label)
+        
+        self.suffix_filename_widget.hide()
+        self.layout.addRow(self.suffix_widget)
+        self.layout.addRow(self.suffix_filename_widget)
+
+        self.formGroupBox.setLayout(self.layout)
+        self.show()
+        
+    # Get the file location from user 
+    def show_dialog(self):
+        self.hide()
+        self.render_folder = str(QFileDialog.getExistingDirectory(self, 'Select Render Directory', os.path.expanduser('~/Desktop')))
+        batch_render(self)
+        
+    # Change the state of QCheckBox 
+    def show_suffix_filename(self, state):
+        if state:
+            self.suffix_filename_widget.show()
+        
+    def hide_suffix_filename(self, state):
+        if state:
+            self.suffix_filename_widget.hide()
+        QTimer.singleShot(1, self.resize_layout)
+            
+    def resize_layout(self):
+        self.setGeometry(50, 50, 0, 0)
+        
+if __name__ == '__main__':
+#     appctxt = ApplicationContext()       # 1. Instantiate ApplicationContext
+
+    marker_app = QApplication.instance() # checks if QApplication already exists
+    if not marker_app: # create QApplication if it doesnt exist
+        marker_app = QApplication(sys.argv)
+
+    ex = User_Input()
+    marker_app.exec_()
+#     sys.exit(marker_app.exec_())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def pick_color():
     user_input_window.deiconify()

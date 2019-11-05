@@ -1,9 +1,10 @@
 import importlib.util
-from PyQt5.QtWidgets import (QApplication, QWidget, QComboBox, QGroupBox, QFormLayout,
-                             QLabel, QDialogButtonBox, QVBoxLayout, QDialog, QSpinBox, 
-                             QFileDialog, QLineEdit)
+from PyQt5.QtWidgets import (QApplication, QWidget, QComboBox, QGroupBox, QFormLayout, QGridLayout,
+                             QLabel, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QDialog, QSpinBox, 
+                             QFileDialog, QLineEdit, QCheckBox, QRadioButton)
 from fbs_runtime.application_context.PyQt5 import ApplicationContext                             
 from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QTimer, Qt
 import os
 import sys
 
@@ -13,11 +14,12 @@ import sys
 resolve_func_path = '/Users/schang/Google Drive/Editables/Python/Resolve/resolve_functions.py'
 spec1 = importlib.util.spec_from_file_location('resolve', resolve_func_path)
 
-resolve = importlib.util.module_from_spec(spec1)
-spec1.loader.exec_module(resolve)
+my_resolve = importlib.util.module_from_spec(spec1)
+spec1.loader.exec_module(my_resolve)
 
-def batcher_render(user_input):
-    resolve.add_stringout_batch_render_queue(user_input.timelines.currentIndex() + 1, user_input.presests.currentText(), user_input.render_folder)
+# Add all marker sections of user's choosing from given sequence to given folder location for all clips. 
+def batch_render(user_input):
+    my_resolve.add_marker_stringout_batch_render_queue(user_input.timelines.currentIndex(), user_input.presets.currentText(), user_input.clip_colors.currentText(), user_input.filename_suffix_textbox.text(), user_input.render_folder)
 
 # Create the PyQt5 class object for user input.
 class User_Input(QDialog):
@@ -37,40 +39,90 @@ class User_Input(QDialog):
         self.setGeometry(50, 50, 0, 0)
         self.setLayout(mainLayout)
         
-        self.setWindowTitle('Timeline Batch Render')
+        self.setWindowTitle('Marker Batch Render')
         
     # Main user input form    
     def createFormGroupBox(self):
-        self.presests = QComboBox(self)
-        self.timelines = QComboBox(self)
+        self.formGroupBox = QGroupBox('Marker Batch Renderer')
+        self.layout = QFormLayout()
         
-        for preset in resolve.get_render_presets():
-            self.presests.addItem(preset) # Add preset to our drop menu
-        for timeline in resolve.get_timelines().values():
+        # Create our widgets
+        self.render_color_widget = QWidget()
+        self.filename_suffix_widget = QWidget()
+        
+        # Create our layout boxes
+        self.render_color_hbox = QHBoxLayout(self.render_color_widget)
+        self.filename_suffix_hbox = QHBoxLayout(self.filename_suffix_widget)
+        
+        # Create our drop down items.  Fill first tiem of timelines with a null answer.
+        self.presets = QComboBox(self)
+        self.timelines = QComboBox(self)
+        self.timelines.addItem('------------')
+        
+        for preset in my_resolve.get_render_presets():
+            self.presets.addItem(preset) # Add preset to our drop menu
+        for timeline in my_resolve.get_timelines().values():
             self.timelines.addItem(timeline) # Add timeline names to our drop menu
+        self.timelines.currentIndexChanged.connect(self.selected_timeline)
             
-        self.formGroupBox = QGroupBox('Batch Renderer')
-        layout = QFormLayout()
-        layout.addRow(QLabel('Select a render preset:'), self.presests)
-        layout.addRow(QLabel('Select a timeline to render from:'), self.timelines)
-        self.formGroupBox.setLayout(layout)
+        # Add our first two drop downs to our main layout.
+        self.layout.addRow(QLabel('Select a render preset:'), self.presets)
+        self.layout.addRow(QLabel('Select a timeline to render from:'), self.timelines)
+        
+        self.formGroupBox.setLayout(self.layout)
         self.show()
+        
+    # When a timeline is selected add a drop down menu full of marker colors.
+    def selected_timeline(self, value):
+        # Check to see if user went back to default null option.  Remove/reset unneeded rows.
+        if value != 0:
+            self.layout.removeRow(3)
+            self.layout.removeRow(2)
+            QTimer.singleShot(1, self.resize_layout)
+            # Create new dropdown menu full of marker clip colors.  Add null option first.
+            self.clip_colors = QComboBox(self)
+            self.clip_colors.clear()
+            self.clip_colors.addItem('------------')
+            for clip_color in my_resolve.get_marker_colors(value):
+                self.clip_colors.addItem(clip_color) # Add clip color to our drop down menu
+            self.clip_colors.currentIndexChanged.connect(self.selected_color_marker)
+            
+            self.layout.addRow(QLabel('Select a clip color to render:'), self.clip_colors)
+        
+        elif value == 0:
+            self.layout.removeRow(3)
+            self.layout.removeRow(2)
+            QTimer.singleShot(1, self.resize_layout)
+    
+    # When a marker color has been selected ask if user would like to add a filename suffix.
+    def selected_color_marker(self, value):
+        # Check to see if user has selected default null option.  Remove/reset unneeded rows.
+        if value != 0:
+            self.layout.removeRow(3)
+            self.filename_suffix_textbox = QLineEdit(self)
+            self.layout.addRow(QLabel('Custom filename suffix:'), self.filename_suffix_textbox)
+        elif value == 0:
+            self.layout.removeRow(3)
+            QTimer.singleShot(1, self.resize_layout)
+
+    # Function to resize window geomerty.
+    def resize_layout(self):
+        self.updateGeometry()
         
     # Get the file location from user 
     def showDialog(self):
         self.hide()
         self.render_folder = str(QFileDialog.getExistingDirectory(self, 'Select Render Directory', os.path.expanduser('~/Desktop')))
-        batcher_render(self)
+        batch_render(self)
 
 
 if __name__ == '__main__':
     # appctxt = ApplicationContext()       # 1. Instantiate ApplicationContext
 
-    # # app = QApplication(sys.argv)
     marker_app = QApplication.instance() # checks if QApplication already exists
     if not marker_app: # create QApplication if it doesnt exist
         marker_app = QApplication(sys.argv)
-        # marker_app = QWidget.QApplication(sys.argv)
+
     ex = User_Input()
     marker_app.exec_()
-    # sys.exc_info(appctxt.app.exec_())
+    # sys.exit(appctxt.app.exec_())

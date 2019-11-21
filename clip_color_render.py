@@ -67,10 +67,12 @@ class User_Input(QDialog):
         
     def selected_timeline(self, value):           
         if value != 0:
-            if self.layout.rowCount() > 2:
+            if self.layout.rowCount() == 4:
                 self.layout.removeRow(3)
+            if self.layout.rowCount() == 3:
                 self.layout.removeRow(2)
                 QTimer.singleShot(1, self.resize_layout)
+            # Create dropdown menu for clip colors.
             self.clip_colors = QComboBox(self)
             self.clip_colors.clear()
             self.clip_colors.addItem('------------')
@@ -81,19 +83,24 @@ class User_Input(QDialog):
             self.layout.addRow(QLabel('Select a clip color to render:'), self.clip_colors)
         
         elif value == 0:
-            self.layout.removeRow(3)
-            self.layout.removeRow(2)
+            if self.layout.rowCount() == 4:
+                self.layout.removeRow(3)
+            if self.layout.rowCount() == 3:
+                self.layout.removeRow(2)
             QTimer.singleShot(1, self.resize_layout)
     
     def selected_clip_color(self, value):
         if value != 0:
-            self.layout.removeRow(3)
+            if self.layout.rowCount() == 4:
+                self.layout.removeRow(3)
+                QTimer.singleShot(1, self.resize_layout)
             self.filename_suffix_textbox = QLineEdit(self)
             self.layout.addRow(QLabel('Custom filename suffix:'), self.filename_suffix_textbox)
         elif value == 0:
             self.layout.removeRow(3)
             QTimer.singleShot(1, self.resize_layout)
     
+    # Function to resize window geomerty.
     def resize_layout(self):
         self.updateGeometry()
     

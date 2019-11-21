@@ -82,31 +82,38 @@ def get_timelines():
     
     return dict_timelines
 
-# Adds clips to render queue based on clip color with given render location.
-def add_clip_color_to_render_queue(clip_color, user_preset, render_location):
-    # Gets active timeline from current project
-    active_timeline = project.GetCurrentTimeline() 
+# Adds clips to render queue based on given clip color with given render location.
+def add_clip_color_to_render_queue(user_timeline, user_preset, user_clip_color, user_suffix, render_location):
+    timeline = project.GetTimelineByIndex(user_timeline)
+    check_preset = project.LoadRenderPreset(user_preset)
+    check_timeline = project.SetCurrentTimeline(timeline)
     track_num = 1
-    project.LoadRenderPreset(user_preset)
+
+    if(not check_preset):
+        return 'Invalid preset.'
+    if(not check_timeline):
+        return 'Invalid timeline.'
 
     # Gets every item from every video track from the active timeline.
-    while track_num <= active_timeline.GetTrackCount('video'):
-        video_track_items = active_timeline.GetItemsInTrack('video', track_num)
+    while track_num <= timeline.GetTrackCount('video'):
+        video_track_items = timeline.GetItemsInTrack('video', track_num)
 
-        # Checks each video clip color to see if it matches given clip color and adds to Render queue.
-        # Adds suffix to file name of timecode of start point of  clip in active timeline.
+        # Checks each video clip color to see if it matches selected clip color and adds to Render queue.
+        # Adds given suffix to file name, otherwise adds timecode of start point of  clip in active timeline.
         # This will only be added if render preset allows unique filenames.
         for video_item in video_track_items.values():
             video_clip = video_item
-            if video_clip.GetClipColor() != 'Default':
-                if clip_color == video_clip.GetClipColor():
+            if user_clip_color == video_clip.GetClipColor():
+                if(user_suffix and not user_suffix.isspace()):
+                    filename = video_clip.GetName().split(sep, 1)[0] + '-' + user_suffix
+                else:
                     filename = video_clip.GetName().split(sep, 1)[0] + '-' \
                     + str(tc.remove_tc_format(tc.frame_to_tc(video_clip.GetStart(), fps)))
-                    check_render = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), \
-                    'MarkOut': video_clip.GetEnd() -1, 'TargetDir': render_location, 'CustomName': filename})
-                    if(not check_render):
-                        return 'An error has occured.'
-                    project.AddRenderJob()
+                check_render = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), \
+                'MarkOut': video_clip.GetEnd() -1, 'TargetDir': render_location, 'CustomName': filename})
+                if(not check_render):
+                    return 'An error has occured.'
+                project.AddRenderJob()
         
         track_num += 1
 
@@ -155,7 +162,6 @@ def add_sequence_batch_render_queue(user_timeline, user_preset, render_location,
 
     if(not check_render):
         return 'An error has occured.'
-    
     project.AddRenderJob()
 
 # Returns the number of jobs in render queue.

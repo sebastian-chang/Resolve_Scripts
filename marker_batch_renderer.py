@@ -19,7 +19,7 @@ spec1.loader.exec_module(my_resolve)
 
 # Add all marker sections of user's choosing from given sequence to given folder location for all clips. 
 def batch_render(user_input):
-    my_resolve.add_marker_stringout_batch_render_queue(user_input.timelines.currentIndex(), user_input.presets.currentText(), user_input.clip_colors.currentText(), user_input.filename_suffix_textbox.text(), user_input.render_folder)
+    my_resolve.add_marker_stringout_batch_render_queue(user_input.timelines.currentIndex(), user_input.presets.currentText(), user_input.marker_colors.currentText(), user_input.filename_suffix_textbox.text(), user_input.render_folder)
 
 # Create the PyQt5 class object for user input.
 class User_Input(QDialog):
@@ -80,14 +80,14 @@ class User_Input(QDialog):
             self.layout.removeRow(2)
             QTimer.singleShot(1, self.resize_layout)
             # Create new dropdown menu full of marker clip colors.  Add null option first.
-            self.clip_colors = QComboBox(self)
-            self.clip_colors.clear()
-            self.clip_colors.addItem('------------')
-            for clip_color in my_resolve.get_marker_colors(value):
-                self.clip_colors.addItem(clip_color) # Add clip color to our drop down menu
-            self.clip_colors.currentIndexChanged.connect(self.selected_color_marker)
+            self.marker_colors = QComboBox(self)
+            self.marker_colors.clear()
+            self.marker_colors.addItem('------------')
+            for marker_color in my_resolve.get_marker_colors(value):
+                self.marker_colors.addItem(marker_color) # Add clip color to our drop down menu
+            self.marker_colors.currentIndexChanged.connect(self.selected_color_marker)
             
-            self.layout.addRow(QLabel('Select a clip color to render:'), self.clip_colors)
+            self.layout.addRow(QLabel('Select a marker color to render:'), self.marker_colors)
         
         elif value == 0:
             self.layout.removeRow(3)

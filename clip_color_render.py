@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QComboBox, QGroupBox, QFormL
                              QFileDialog, QLineEdit, QCheckBox, QRadioButton)
 from fbs_runtime.application_context.PyQt5 import ApplicationContext                             
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtCore import QTimer
 import os
 import sys
 
@@ -67,7 +67,7 @@ class Main_Input(QDialog):
             if self.layout.rowCount() == 3:
                 self.layout.removeRow(2)
                 QTimer.singleShot(1, self.resize_layout)
-                
+
             # Create dropdown menu for clip colors.
             self.clip_color_row = QHBoxLayout()
             self.clip_colors = QComboBox(self)

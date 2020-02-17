@@ -1,6 +1,7 @@
 import importlib.util
 import os
 import time
+import csv
 
 # Initialize  additional Python scripts needed to run code.
 # timecode.py is used to do any timecode conversions.
@@ -124,6 +125,7 @@ def add_clip_color_with_shot_list(user_timeline, user_preset, user_clip_color, u
     check_timeline = project.SetCurrentTimeline(timeline)
     track_num = 1
     vfx_shot_df = vfx_list[0]
+    vfx_name_list = []
 
     if(not check_preset):
         return 'Invalid preset.'
@@ -148,26 +150,29 @@ def add_clip_color_with_shot_list(user_timeline, user_preset, user_clip_color, u
                         scene = vfx_shot_row.iloc[0, :]['SCENE']
                         filename = user_prefix + shot_number + '_SC' + scene
                         clip_render_location = render_location + '/' + filename + '/'
-                        filename += '_'
-                        check_render = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), \
-                        'MarkOut': video_clip.GetEnd() -1, 'TargetDir': clip_render_location, 'CustomName': filename})
                     else:
                         filename = video_clip.GetName().split(sep, 1)[0] + '-' \
                         + str(tc.remove_tc_format(tc.frame_to_tc(video_clip.GetStart(), fps)))
                         clip_render_location = render_location + '/' + filename + '/'
-                        filename += '_'
-                        check_render = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), \
-                        'MarkOut': video_clip.GetEnd() -1, 'TargetDir': clip_render_location, 'CustomName': filename})
+                    vfx_name_list.append(filename)
+                    filename += '_'
                 else:
                     filename = video_clip.GetName().split(sep, 1)[0] + '-' \
                     + str(tc.remove_tc_format(tc.frame_to_tc(video_clip.GetStart(), fps)))
-                    check_render = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), \
-                    'MarkOut': video_clip.GetEnd() -1, 'TargetDir': render_location, 'CustomName': filename})
+                    clip_render_location = render_location
+                    vfx_name_list.append(filename)
+                check_render = project.SetRenderSettings({'MarkIn': video_clip.GetStart(), 
+                'MarkOut': video_clip.GetEnd() -1, 'TargetDir': clip_render_location, 'CustomName': filename})
                 if(not check_render):
                     return 'An error has occured.'
                 project.AddRenderJob()
         
         track_num += 1
+    csv_filename = os.path.expanduser('~/Desktop') + '/' + timeline.GetName() + '-list.csv'
+    print(vfx_name_list)
+    with open(csv_filename, 'w', newline = '\n') as file:
+        writer = csv.writer(file)
+        writer.writerows(zip(vfx_name_list))
 
 # Adds marked portions of a sequence to render queue to the given render location.
 def add_marker_stringout_batch_render_queue(user_timeline, user_preset, user_color, user_suffix, render_location):

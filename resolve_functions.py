@@ -169,7 +169,6 @@ def add_clip_color_with_shot_list(user_timeline, user_preset, user_clip_color, u
         
         track_num += 1
     csv_filename = os.path.expanduser('~/Desktop') + '/' + timeline.GetName() + '-list.csv'
-    print(vfx_name_list)
     with open(csv_filename, 'w', newline = '\n') as file:
         writer = csv.writer(file)
         writer.writerows(zip(vfx_name_list))

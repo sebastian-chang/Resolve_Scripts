@@ -34,12 +34,12 @@ class VFX_Report_Input(QDialog):
         self.setLayout(mainLayout)
         
         self.setWindowTitle('Clip Color Batch Render')
-        
+    
+    def getInfo(self, *user_input):
+        self.user_input = user_input[0]
+
     # Main user input form    
-    def createFormGroupBox(self, *user_input):
-        if user_input:
-            self.user_input = user_input[0]
-            
+    def createFormGroupBox(self):            
         self.formGroupBox = QGroupBox('Would you like to add a Visual effects list?')
         self.layout = QFormLayout()        
         
@@ -90,7 +90,7 @@ class VFX_Report_Input(QDialog):
             # Clean our data frame to only contain the data we can use.
             # Format data to fit our filenaming conventions 
             self.vfx_df = self.vfx_df.loc[:, ['SHOT NUMBER', 'TIMECODE IN', 'FILE NAME', 'SCENE']].dropna()
-            self.vfx_df.loc[:, 'SHOT NUMBER'] = self.vfx_df.loc[:, 'SHOT NUMBER'].astype(str)
+            self.vfx_df.loc[:, 'SHOT NUMBER'] = self.vfx_df.loc[:, 'SHOT NUMBER'].astype(int).astype(str)
             self.vfx_df.loc[:,'SHOT NUMBER'] = self.vfx_df.loc[:, 'SHOT NUMBER'].apply(lambda x: x.zfill(4))
             self.vfx_df.loc[:, 'SCENE'] = self.vfx_df.loc[:, 'SCENE'].astype(str)
             self.vfx_df.loc[:, 'SCENE'] = self.vfx_df.loc[:, 'SCENE'].apply(lambda x: x.zfill(3))

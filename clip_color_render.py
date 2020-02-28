@@ -131,9 +131,8 @@ class Main_Input(QDialog):
 
     def accept(self):
         self.report_ui = VFX_Report_Input()
-        self.report_ui.createFormGroupBox(self)
+        self.report_ui.getInfo(self)
         self.hide()
-        self.report_ui.show()
         
 if __name__ == '__main__':
 #     appctxt = ApplicationContext()       # 1. Instantiate ApplicationContext
